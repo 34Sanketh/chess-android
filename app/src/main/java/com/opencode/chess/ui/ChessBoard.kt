@@ -17,9 +17,15 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.opencode.chess.engine.Color as PieceColor
 import com.opencode.chess.engine.Move
 import com.opencode.chess.engine.Piece
@@ -45,6 +51,7 @@ fun ChessBoard(
     onSquareClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val textMeasurer = rememberTextMeasurer()
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -74,7 +81,7 @@ fun ChessBoard(
 
             drawBoard(sqSize)
             drawHighlights(sqSize, selectedSquare, legalMoves, lastMove, checkSquares, flipped)
-            drawPieces(sqSize, board, flipped)
+            drawPieces(sqSize, board, flipped, textMeasurer)
         }
     }
 }
@@ -151,7 +158,7 @@ private fun DrawScope.drawHighlights(
     }
 }
 
-private fun DrawScope.drawPieces(sqSize: Float, board: Array<Array<Piece?>>, flipped: Boolean) {
+private fun DrawScope.drawPieces(sqSize: Float, board: Array<Array<Piece?>>, flipped: Boolean, textMeasurer: TextMeasurer) {
     for (row in 0..7) {
         for (col in 0..7) {
             val displayRow = if (flipped) 7 - row else row
@@ -160,12 +167,12 @@ private fun DrawScope.drawPieces(sqSize: Float, board: Array<Array<Piece?>>, fli
             val cx = col * sqSize + sqSize / 2
             val cy = row * sqSize + sqSize / 2
             val radius = sqSize * 0.38f
-            drawPiece(piece, cx, cy, radius)
+            drawPiece(piece, cx, cy, radius, textMeasurer)
         }
     }
 }
 
-private fun DrawScope.drawPiece(piece: Piece, cx: Float, cy: Float, r: Float) {
+private fun DrawScope.drawPiece(piece: Piece, cx: Float, cy: Float, r: Float, textMeasurer: TextMeasurer) {
     val bg = if (piece.color == PieceColor.WHITE) Color(0xFFFFFEF7) else Color(0xFF1A1A1A)
     val fg = if (piece.color == PieceColor.WHITE) Color(0xFF333333) else Color(0xFFFFFEF7)
     val shadow = Color(0x40000000)
@@ -181,13 +188,12 @@ private fun DrawScope.drawPiece(piece: Piece, cx: Float, cy: Float, r: Float) {
         PieceType.KNIGHT -> "\u2658"
         PieceType.PAWN -> "\u2659"
     }
-    val pt = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        color = fg.hashCode()
-        textSize = r * 1.4f
-        textAlign = android.graphics.Paint.Align.CENTER
-        typeface = android.graphics.Typeface.DEFAULT_BOLD
-    }
-    drawIntoCanvas { canvas ->
-        canvas.nativeCanvas.drawText(symbol, cx, cy + r * 0.45f, pt)
-    }
+    val textLayout = textMeasurer.measure(
+        text = AnnotatedString(symbol),
+        style = TextStyle(fontSize = (r * 1.3f).sp, fontWeight = FontWeight.Bold, color = fg)
+    )
+    drawText(
+        textLayout,
+        topLeft = Offset(cx - textLayout.size.width / 2, cy - textLayout.size.height / 2)
+    )
 }
