@@ -14,10 +14,11 @@ import com.opencode.chess.engine.PieceType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.system.measureTimeMillis
 
 class GameState : ViewModel() {
     val engine = ChessEngine()
-    private val ai = ChessAI(engine)
 
     var selectedSquare by mutableStateOf<Int?>(null)
     var legalMovesForSelected = mutableListOf<Int>()
@@ -89,13 +90,27 @@ class GameState : ViewModel() {
         if (gameOver || isAiThinking) return
         isAiThinking = true
         scope.launch {
-            val bestMove = ai.findBestMove(4)
-            if (bestMove != null) {
-                engine.applyMove(bestMove)
-                lastMove = bestMove
-                updateGameState()
+            val fen = engine.generateFen()
+            val aiEngine = ChessEngine()
+            aiEngine.loadFen(fen)
+            val ai = ChessAI(aiEngine)
+            var bestMove: Move? = null
+            val elapsed = measureTimeMillis {
+                bestMove = ai.findBestMove(3)
             }
-            isAiThinking = false
+            withContext(Dispatchers.Main) {
+                if (elapsed < 5000 && bestMove != null) {
+                    val matchingMove = engine.generateMoves().find {
+                        it.from == bestMove.from && it.to == bestMove.to
+                                && it.promotion == bestMove.promotion
+                    }
+                    if (matchingMove != null && engine.applyMove(matchingMove)) {
+                        lastMove = matchingMove
+                        updateGameState()
+                    }
+                }
+                isAiThinking = false
+            }
         }
     }
 
