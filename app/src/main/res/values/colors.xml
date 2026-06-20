@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="board_light">#F0D9B5</color>
+    <color name="board_dark">#B58863</color>
+    <color name="highlight">#7FC97F</color>
+    <color name="check">#FF4444</color>
+    <color name="last_move">#FFFF77</color>
+    <color name="background">#1A1A2E</color>
+    <color name="surface">#16213E</color>
+    <color name="accent">#E94560</color>
+</resources>
