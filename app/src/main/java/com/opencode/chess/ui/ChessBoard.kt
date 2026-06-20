@@ -265,14 +265,7 @@ private fun DrawScope.drawKnight(cx: Float, cy: Float, r: Float, color: Color, o
     drawPath(path, color, style = Fill)
     drawPath(path, outline, style = Stroke(width = r * 0.04f))
 
-    val eye = Path().apply {
-        arcTo(
-            cx - s * 0.15f, cy - s * 0.45f,
-            s * 0.1f, s * 0.1f,
-            0f, 360f, false
-        )
-    }
-    drawPath(eye, outline, style = Fill)
+    drawCircle(outline, r * 0.08f, Offset(cx - s * 0.1f, cy - s * 0.4f))
 }
 
 private fun DrawScope.drawBishop(cx: Float, cy: Float, r: Float, color: Color, outline: Color) {
