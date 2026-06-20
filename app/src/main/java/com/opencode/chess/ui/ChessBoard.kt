@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.opencode.chess.engine.Color as PieceColor
@@ -186,5 +187,7 @@ private fun DrawScope.drawPiece(piece: Piece, cx: Float, cy: Float, r: Float) {
         textAlign = android.graphics.Paint.Align.CENTER
         typeface = android.graphics.Typeface.DEFAULT_BOLD
     }
-    drawContext.canvas.nativeCanvas.drawText(symbol, cx, cy + r * 0.45f, pt)
+    drawIntoCanvas { canvas ->
+        canvas.nativeCanvas.drawText(symbol, cx, cy + r * 0.45f, pt)
+    }
 }

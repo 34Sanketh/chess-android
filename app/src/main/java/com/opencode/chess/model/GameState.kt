@@ -94,15 +94,13 @@ class GameState : ViewModel() {
             val aiEngine = ChessEngine()
             aiEngine.loadFen(fen)
             val ai = ChessAI(aiEngine)
-            var bestMove: Move? = null
-            val elapsed = measureTimeMillis {
-                bestMove = ai.findBestMove(3)
-            }
+            val foundMove = ai.findBestMove(3)
+            val moveToApply = foundMove
             withContext(Dispatchers.Main) {
-                if (elapsed < 5000 && bestMove != null) {
+                if (moveToApply != null) {
                     val matchingMove = engine.generateMoves().find {
-                        it.from == bestMove.from && it.to == bestMove.to
-                                && it.promotion == bestMove.promotion
+                        it.from == moveToApply.from && it.to == moveToApply.to
+                                && it.promotion == moveToApply.promotion
                     }
                     if (matchingMove != null && engine.applyMove(matchingMove)) {
                         lastMove = matchingMove
