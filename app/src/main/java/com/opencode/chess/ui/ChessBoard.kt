@@ -15,9 +15,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -33,7 +31,6 @@ import com.opencode.chess.ui.theme.CheckRed
 import com.opencode.chess.ui.theme.LastMoveDark
 import com.opencode.chess.ui.theme.LastMoveLight
 import com.opencode.chess.ui.theme.MoveDot
-import kotlin.math.min
 
 @Composable
 fun ChessBoard(
@@ -168,210 +165,26 @@ private fun DrawScope.drawPieces(sqSize: Float, board: Array<Array<Piece?>>, fli
 }
 
 private fun DrawScope.drawPiece(piece: Piece, cx: Float, cy: Float, r: Float) {
-    val color = if (piece.color == PieceColor.WHITE) Color(0xFFFFFEF7) else Color(0xFF1A1A1A)
-    val outline = if (piece.color == PieceColor.WHITE) Color(0xFF555555) else Color(0xFFCCCCCC)
+    val bg = if (piece.color == PieceColor.WHITE) Color(0xFFFFFEF7) else Color(0xFF1A1A1A)
+    val fg = if (piece.color == PieceColor.WHITE) Color(0xFF333333) else Color(0xFFFFFEF7)
     val shadow = Color(0x40000000)
 
     drawCircle(shadow, r, Offset(cx + r * 0.04f, cy + r * 0.04f))
-    drawCircle(color, r, Offset(cx, cy))
+    drawCircle(bg, r, Offset(cx, cy))
 
-    when (piece.type) {
-        PieceType.PAWN -> drawPawn(cx, cy, r, color, outline)
-        PieceType.ROOK -> drawRook(cx, cy, r, color, outline)
-        PieceType.KNIGHT -> drawKnight(cx, cy, r, color, outline)
-        PieceType.BISHOP -> drawBishop(cx, cy, r, color, outline)
-        PieceType.QUEEN -> drawQueen(cx, cy, r, color, outline)
-        PieceType.KING -> drawKing(cx, cy, r, color, outline)
+    val symbol = when (piece.type) {
+        PieceType.KING -> "\u2654"
+        PieceType.QUEEN -> "\u2655"
+        PieceType.ROOK -> "\u2656"
+        PieceType.BISHOP -> "\u2657"
+        PieceType.KNIGHT -> "\u2658"
+        PieceType.PAWN -> "\u2659"
     }
-}
-
-private fun DrawScope.drawPawn(cx: Float, cy: Float, r: Float, color: Color, outline: Color) {
-    val s = r * 0.5f
-    val path = Path().apply {
-        moveTo(cx - s * 0.4f, cy + s * 0.7f)
-        cubicTo(
-            cx - s * 0.6f, cy + s * 0.3f,
-            cx - s * 0.3f, cy - s * 0.1f,
-            cx - s * 0.1f, cy - s * 0.3f,
-        )
-        cubicTo(
-            cx - s * 0.05f, cy - s * 0.45f,
-            cx - s * 0.15f, cy - s * 0.6f,
-            cx, cy - s * 0.7f,
-        )
-        cubicTo(
-            cx + s * 0.15f, cy - s * 0.6f,
-            cx + s * 0.05f, cy - s * 0.45f,
-            cx + s * 0.1f, cy - s * 0.3f,
-        )
-        cubicTo(
-            cx + s * 0.3f, cy - s * 0.1f,
-            cx + s * 0.6f, cy + s * 0.3f,
-            cx + s * 0.4f, cy + s * 0.7f,
-        )
-        close()
+    val pt = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = fg.hashCode()
+        textSize = r * 1.4f
+        textAlign = android.graphics.Paint.Align.CENTER
+        typeface = android.graphics.Typeface.DEFAULT_BOLD
     }
-    drawPath(path, color, style = Fill)
-    drawPath(path, outline, style = Stroke(width = r * 0.04f))
-}
-
-private fun DrawScope.drawRook(cx: Float, cy: Float, r: Float, color: Color, outline: Color) {
-    val s = r * 0.5f
-    val path = Path().apply {
-        moveTo(cx - s * 0.5f, cy + s * 0.6f)
-        lineTo(cx - s * 0.5f, cy + s * 0.3f)
-        lineTo(cx - s * 0.7f, cy + s * 0.15f)
-        lineTo(cx - s * 0.7f, cy - s * 0.15f)
-        lineTo(cx - s * 0.5f, cy - s * 0.15f)
-        lineTo(cx - s * 0.5f, cy - s * 0.3f)
-        lineTo(cx - s * 0.3f, cy - s * 0.5f)
-        lineTo(cx + s * 0.3f, cy - s * 0.5f)
-        lineTo(cx + s * 0.5f, cy - s * 0.3f)
-        lineTo(cx + s * 0.5f, cy - s * 0.15f)
-        lineTo(cx + s * 0.7f, cy - s * 0.15f)
-        lineTo(cx + s * 0.7f, cy + s * 0.15f)
-        lineTo(cx + s * 0.5f, cy + s * 0.3f)
-        lineTo(cx + s * 0.5f, cy + s * 0.6f)
-        close()
-        moveTo(cx - s * 0.35f, cy - s * 0.15f)
-        lineTo(cx - s * 0.35f, cy + s * 0.1f)
-        moveTo(cx, cy - s * 0.15f)
-        lineTo(cx, cy + s * 0.1f)
-        moveTo(cx + s * 0.35f, cy - s * 0.15f)
-        lineTo(cx + s * 0.35f, cy + s * 0.1f)
-    }
-    drawPath(path, color, style = Fill)
-    drawPath(path, outline, style = Stroke(width = r * 0.04f))
-}
-
-private fun DrawScope.drawKnight(cx: Float, cy: Float, r: Float, color: Color, outline: Color) {
-    val s = r * 0.5f
-    val path = Path().apply {
-        moveTo(cx - s * 0.5f, cy + s * 0.6f)
-        lineTo(cx + s * 0.3f, cy + s * 0.6f)
-        lineTo(cx + s * 0.5f, cy + s * 0.3f)
-        lineTo(cx + s * 0.3f, cy + s * 0.1f)
-        lineTo(cx + s * 0.3f, cy - s * 0.1f)
-        lineTo(cx + s * 0.5f, cy - s * 0.25f)
-        lineTo(cx + s * 0.4f, cy - s * 0.5f)
-        lineTo(cx + s * 0.1f, cy - s * 0.6f)
-        lineTo(cx - s * 0.2f, cy - s * 0.5f)
-        lineTo(cx - s * 0.35f, cy - s * 0.25f)
-        lineTo(cx - s * 0.4f, cy)
-        lineTo(cx - s * 0.6f, cy + s * 0.1f)
-        lineTo(cx - s * 0.5f, cy + s * 0.3f)
-        close()
-    }
-    drawPath(path, color, style = Fill)
-    drawPath(path, outline, style = Stroke(width = r * 0.04f))
-
-    drawCircle(outline, r * 0.08f, Offset(cx - s * 0.1f, cy - s * 0.4f))
-}
-
-private fun DrawScope.drawBishop(cx: Float, cy: Float, r: Float, color: Color, outline: Color) {
-    val s = r * 0.5f
-    val path = Path().apply {
-        moveTo(cx, cy - s * 0.8f)
-        cubicTo(
-            cx + s * 0.1f, cy - s * 0.6f,
-            cx + s * 0.3f, cy - s * 0.3f,
-            cx + s * 0.4f, cy - s * 0.1f,
-        )
-        cubicTo(
-            cx + s * 0.5f, cy + s * 0.1f,
-            cx + s * 0.5f, cy + s * 0.3f,
-            cx + s * 0.4f, cy + s * 0.5f,
-        )
-        lineTo(cx + s * 0.5f, cy + s * 0.6f)
-        lineTo(cx - s * 0.5f, cy + s * 0.6f)
-        lineTo(cx - s * 0.4f, cy + s * 0.5f)
-        cubicTo(
-            cx - s * 0.5f, cy + s * 0.3f,
-            cx - s * 0.5f, cy + s * 0.1f,
-            cx - s * 0.4f, cy - s * 0.1f,
-        )
-        cubicTo(
-            cx - s * 0.3f, cy - s * 0.3f,
-            cx - s * 0.1f, cy - s * 0.6f,
-            cx, cy - s * 0.8f,
-        )
-        close()
-        moveTo(cx - s * 0.15f, cy - s * 0.3f)
-        lineTo(cx - s * 0.2f, cy - s * 0.1f)
-        moveTo(cx + s * 0.15f, cy - s * 0.3f)
-        lineTo(cx + s * 0.2f, cy - s * 0.1f)
-    }
-    drawPath(path, color, style = Fill)
-    drawPath(path, outline, style = Stroke(width = r * 0.04f))
-}
-
-private fun DrawScope.drawQueen(cx: Float, cy: Float, r: Float, color: Color, outline: Color) {
-    val s = r * 0.5f
-    val path = Path().apply {
-        moveTo(cx - s * 0.5f, cy + s * 0.6f)
-        lineTo(cx + s * 0.5f, cy + s * 0.6f)
-        lineTo(cx + s * 0.4f, cy + s * 0.3f)
-        lineTo(cx + s * 0.6f, cy + s * 0.3f)
-        lineTo(cx + s * 0.4f, cy)
-        lineTo(cx + s * 0.55f, cy - s * 0.2f)
-        lineTo(cx + s * 0.3f, cy - s * 0.1f)
-        lineTo(cx + s * 0.2f, cy - s * 0.5f)
-        lineTo(cx, cy - s * 0.3f)
-        lineTo(cx - s * 0.2f, cy - s * 0.5f)
-        lineTo(cx - s * 0.3f, cy - s * 0.1f)
-        lineTo(cx - s * 0.55f, cy - s * 0.2f)
-        lineTo(cx - s * 0.4f, cy)
-        lineTo(cx - s * 0.6f, cy + s * 0.3f)
-        lineTo(cx - s * 0.4f, cy + s * 0.3f)
-        close()
-    }
-    drawPath(path, color, style = Fill)
-    drawPath(path, outline, style = Stroke(width = r * 0.04f))
-
-    val crown = Path().apply {
-        moveTo(cx - s * 0.2f, cy - s * 0.15f)
-        lineTo(cx - s * 0.15f, cy - s * 0.35f)
-        lineTo(cx, cy - s * 0.2f)
-        lineTo(cx + s * 0.15f, cy - s * 0.35f)
-        lineTo(cx + s * 0.2f, cy - s * 0.15f)
-        close()
-    }
-    drawPath(crown, color, style = Fill)
-    drawPath(crown, outline, style = Stroke(width = r * 0.03f))
-
-    for (dx in listOf(-0.25f, 0f, 0.25f)) {
-        drawCircle(outline, r * 0.04f, Offset(cx + dx * s, cy - s * 0.55f))
-    }
-}
-
-private fun DrawScope.drawKing(cx: Float, cy: Float, r: Float, color: Color, outline: Color) {
-    val s = r * 0.5f
-    val path = Path().apply {
-        moveTo(cx - s * 0.5f, cy + s * 0.6f)
-        lineTo(cx + s * 0.5f, cy + s * 0.6f)
-        lineTo(cx + s * 0.4f, cy + s * 0.3f)
-        lineTo(cx + s * 0.6f, cy + s * 0.3f)
-        lineTo(cx + s * 0.4f, cy)
-        lineTo(cx + s * 0.55f, cy - s * 0.2f)
-        lineTo(cx + s * 0.3f, cy - s * 0.1f)
-        lineTo(cx + s * 0.2f, cy - s * 0.5f)
-        lineTo(cx, cy - s * 0.3f)
-        lineTo(cx - s * 0.2f, cy - s * 0.5f)
-        lineTo(cx - s * 0.3f, cy - s * 0.1f)
-        lineTo(cx - s * 0.55f, cy - s * 0.2f)
-        lineTo(cx - s * 0.4f, cy)
-        lineTo(cx - s * 0.6f, cy + s * 0.3f)
-        lineTo(cx - s * 0.4f, cy + s * 0.3f)
-        close()
-    }
-    drawPath(path, color, style = Fill)
-    drawPath(path, outline, style = Stroke(width = r * 0.04f))
-
-    val cross = Path().apply {
-        moveTo(cx, cy - s * 0.7f)
-        lineTo(cx, cy - s * 0.2f)
-        moveTo(cx - s * 0.25f, cy - s * 0.45f)
-        lineTo(cx + s * 0.25f, cy - s * 0.45f)
-    }
-    drawPath(cross, outline, style = Stroke(width = r * 0.06f, cap = androidx.compose.ui.graphics.StrokeCap.Round))
+    drawContext.canvas.nativeCanvas.drawText(symbol, cx, cy + r * 0.45f, pt)
 }
