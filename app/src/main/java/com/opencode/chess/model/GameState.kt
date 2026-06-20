@@ -33,6 +33,8 @@ class GameState : ViewModel() {
     var playerColor by mutableStateOf(Color.WHITE)
     var moveHistory by mutableStateOf(listOf<Move>())
     var selectedHistoryIndex by mutableIntStateOf(-1)
+    var animatedFrom by mutableStateOf<Int?>(null)
+    var animatedTo by mutableStateOf<Int?>(null)
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
@@ -75,6 +77,8 @@ class GameState : ViewModel() {
 
     private fun executeMove(move: Move) {
         if (engine.applyMove(move)) {
+            animatedFrom = move.from
+            animatedTo = move.to
             lastMove = move
             updateGameState()
             selectedSquare = null
@@ -165,7 +169,7 @@ class GameState : ViewModel() {
         return engine.board[row][col]
     }
 
-    fun toggleFlop() {
+    fun toggleFlip() {
         playerColor = playerColor.opponent
         selectedSquare = null
         legalMovesForSelected.clear()
